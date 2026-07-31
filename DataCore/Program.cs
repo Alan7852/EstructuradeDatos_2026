@@ -1,72 +1,48 @@
 ﻿using System;
-using DataCore; // Importa el namespace donde están RegistroDatos y QuickSorter
+using DataCore;
 
 class Program
 {
     static void Main()
     {
-        var rnd = new Random();
-        var registros = new RegistroDatos[20];
-
-        for (int i = 0; i < registros.Length; i++)
-            registros[i] = new RegistroDatos(i, rnd.NextDouble() * 100, $"Item{i}");
-
-        Console.WriteLine("Array inicial:");
-        foreach (var r in registros) Console.WriteLine(r);
-
-        Console.WriteLine("\nElige algoritmo: 1 = Selection Sort, 2 = QuickSort");
+        Console.WriteLine("Selecciona fase: 1 = Selection Sort, 2 = QuickSort, 3 = Lista Enlazada");
         var opcion = Console.ReadLine();
 
         if (opcion == "1")
         {
-            var metricas = OrdenarPorSeleccion(ref registros);
-            Console.WriteLine("\nArray ordenado con Selection Sort:");
-            foreach (var r in registros) Console.WriteLine(r);
-            Console.WriteLine(metricas);
+            // Aquí dejas tu código de Fase 1 (Selection Sort)
         }
-        else
+        else if (opcion == "2")
         {
-            QuickSorter.QuickSort(registros, 0, registros.Length - 1);
-            Console.WriteLine("\nArray ordenado con QuickSort:");
-            foreach (var r in registros) Console.WriteLine(r);
+            // Aquí dejas tu código de Fase 2 (QuickSort)
         }
-    }
-
-    // Método de Selection Sort de la Fase 1
-    static MetricasOrdenacion OrdenarPorSeleccion(ref RegistroDatos[] arr)
-    {
-        var metricas = new MetricasOrdenacion();
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-
-        for (int i = 0; i < arr.Length - 1; i++)
+        else if (opcion == "3")
         {
-            int minIdx = i;
-            for (int j = i + 1; j < arr.Length; j++)
+            // Aquí pegas el orquestador de Fase 3
+            TablaDinamica dataCore = new TablaDinamica();
+
+            // Paso 1: Insertar 15 registros
+            for (int i = 1; i <= 15; i++)
             {
-                metricas.TotalComparaciones++;
-                if (arr[j].Valor < arr[minIdx].Valor)
-                    minIdx = j;
+                var reg = new RegistroDatos(i, i * 100.0, $"Transacción-{i}");
+                dataCore.InsertarFinal(reg);
+                Console.WriteLine($"[INSERT] Registro {i} añadido a la cadena.");
             }
 
-            if (minIdx != i)
-            {
-                (arr[i], arr[minIdx]) = (arr[minIdx], arr[i]);
-                metricas.TotalIntercambios++;
-            }
+            // Paso 2: Eliminar 2 registros
+            Console.WriteLine("\n--- Eliminando registros con Id 5 y Id 11 ---");
+            dataCore.EliminarPorId(5);
+            dataCore.EliminarPorId(11);
+            Console.WriteLine("Cadena reestructurada exitosamente.");
+
+            // Paso 3: Convertir a arreglo y ordenar con QuickSort
+            var arreglo = dataCore.ObtenerComoArreglo();
+            Console.WriteLine($"\nRegistros en arreglo: {arreglo.Length} (esperado: 13)");
+
+            QuickSorter.QuickSort(arreglo, 0, arreglo.Length - 1);
+            Console.WriteLine("\n--- Arreglo ordenado por Id (QuickSort) ---");
+            foreach (var r in arreglo)
+                Console.WriteLine($"Id: {r.Id} | Etiqueta: {r.Etiqueta} | Valor: {r.Valor}");
         }
-
-        sw.Stop();
-        metricas.TiempoMs = sw.ElapsedMilliseconds;
-        return metricas;
     }
-}
-
-struct MetricasOrdenacion
-{
-    public int TotalComparaciones { get; set; }
-    public int TotalIntercambios { get; set; }
-    public long TiempoMs { get; set; }
-
-    public override string ToString() =>
-        $"Comparaciones: {TotalComparaciones}, Intercambios: {TotalIntercambios}, Tiempo: {TiempoMs} ms";
 }
